@@ -6,12 +6,21 @@ from multi_agent_research_lab.core.schemas import BenchmarkMetrics
 def render_markdown_report(metrics: list[BenchmarkMetrics]) -> str:
     """Render benchmark metrics to markdown.
 
-    TODO(student): Add richer analysis, examples, screenshots, and trace links.
+    Includes latency, estimated cost, citation coverage, error status, and notes.
     """
 
-    lines = ["# Benchmark Report", "", "| Run | Latency (s) | Cost (USD) | Quality | Notes |", "|---|---:|---:|---:|---|"]
+    lines = [
+        "# Benchmark Report",
+        "",
+        "| Run | Latency (s) | Cost (USD) | Citations | Errors | Notes |",
+        "|---|---:|---:|---:|---:|---|",
+    ]
     for item in metrics:
-        cost = "" if item.estimated_cost_usd is None else f"{item.estimated_cost_usd:.4f}"
-        quality = "" if item.quality_score is None else f"{item.quality_score:.1f}"
-        lines.append(f"| {item.run_name} | {item.latency_seconds:.2f} | {cost} | {quality} | {item.notes} |")
+        cost = f"${item.estimated_cost_usd:.4f}" if item.estimated_cost_usd else "$0.00"
+        citations = f"{item.citation_coverage * 100:.1f}%" if item.citation_coverage else "0%"
+        errors = "❌" if item.error_rate and item.error_rate > 0 else "✅"
+        lines.append(
+            f"| {item.run_name} | {item.latency_seconds:.2f} | {cost} | "
+            f"{citations} | {errors} | {item.notes} |"
+        )
     return "\n".join(lines) + "\n"

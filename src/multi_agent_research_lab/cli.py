@@ -26,16 +26,37 @@ def _init() -> None:
 def baseline(
     query: Annotated[str, typer.Option("--query", "-q", help="Research query")],
 ) -> None:
-    """Run a minimal single-agent baseline placeholder."""
+    """Run a real single-agent baseline."""
 
     _init()
+    from multi_agent_research_lab.services.llm_client import LLMClient
+
     request = ResearchQuery(query=query)
     state = ResearchState(request=request)
-    state.final_answer = (
-        "Baseline skeleton response. TODO(student): replace this with a real single-agent "
-        "implementation and record latency/cost/quality metrics."
+
+    client = LLMClient()
+    system_prompt = (
+        "You are a helpful research assistant. Provide a comprehensive "
+        "summary based on the query."
     )
-    console.print(Panel.fit(state.final_answer, title="Single-Agent Baseline"))
+
+    with console.status("[bold green]Agent working..."):
+        response = client.complete(system_prompt, query)
+        state.final_answer = response.content
+        
+        # Log metrics to trace
+        state.add_trace_event("baseline_completion", {
+            "input_tokens": response.input_tokens,
+            "output_tokens": response.output_tokens,
+            "cost_usd": response.cost_usd
+        })
+
+    console.print(Panel(state.final_answer, title="Single-Agent Baseline (Gemini)"))
+    console.print(
+        "[dim]Cost: "
+        f"${response.cost_usd:.6f} | Tokens: {response.input_tokens or 0} in / "
+        f"{response.output_tokens or 0} out[/dim]"
+    )
 
 
 @app.command("multi-agent")

@@ -4,16 +4,16 @@ install:
 	pip install -e "[dev,llm]"
 
 test:
-	pytest
+	.venv/bin/python -m pytest
 
 lint:
-	ruff check src tests
+	.venv/bin/ruff check src tests
 
 format:
-	ruff format src tests
+	.venv/bin/ruff format src tests
 
 typecheck:
-	mypy src
+	.venv/bin/python -m mypy src
 
 run-baseline:
 	python -m multi_agent_research_lab.cli baseline --query "Research GraphRAG state-of-the-art"
